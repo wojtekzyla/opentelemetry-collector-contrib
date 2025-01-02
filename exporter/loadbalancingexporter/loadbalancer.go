@@ -23,6 +23,7 @@ const (
 var (
 	errNoResolver                = errors.New("no resolvers specified for the exporter")
 	errMultipleResolversProvided = errors.New("only one resolver should be specified")
+	errNoExporter                = errors.New("no exporter was enabled")
 )
 
 type componentFactory func(ctx context.Context, endpoint string) (component.Component, error)

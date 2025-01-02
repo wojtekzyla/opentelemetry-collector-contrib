@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/splunkhecexporter"
 	"sync"
 	"time"
 
@@ -43,15 +44,29 @@ func newTracesExporter(params exporter.Settings, cfg component.Config) (*traceEx
 	if err != nil {
 		return nil, err
 	}
+	var cfFunc func(ctx context.Context, endpoint string) (component.Component, error)
+	cfFunc = nil
+	if cfg.(*Config).Exporter.OTLP.Enabled {
+		exporterFactory := otlpexporter.NewFactory()
+		cfFunc = func(ctx context.Context, endpoint string) (component.Component, error) {
+			oCfg := buildOtlpExporterConfig(cfg.(*Config), endpoint)
+			oParams := buildExporterSettings(params, endpoint)
 
-	exporterFactory := otlpexporter.NewFactory()
-	cfFunc := func(ctx context.Context, endpoint string) (component.Component, error) {
-		oCfg := buildExporterConfig(cfg.(*Config), endpoint)
-		oParams := buildExporterSettings(params, endpoint)
-
-		return exporterFactory.CreateTraces(ctx, oParams, &oCfg)
+			return exporterFactory.CreateTraces(ctx, oParams, &oCfg)
+		}
 	}
+	if cfg.(*Config).Exporter.Splunk.Enabled {
+		exporterFactory := splunkhecexporter.NewFactory()
+		cfFunc = func(ctx context.Context, endpoint string) (component.Component, error) {
+			oCfg := buildSplunkExporterConfig(cfg.(*Config), endpoint)
+			oParams := buildExporterSettings(params, endpoint)
 
+			return exporterFactory.CreateTraces(ctx, oParams, &oCfg)
+		}
+	}
+	if cfFunc == nil {
+		return nil, errNoExporter
+	}
 	lb, err := newLoadBalancer(params.Logger, cfg, cfFunc, telemetry)
 	if err != nil {
 		return nil, err

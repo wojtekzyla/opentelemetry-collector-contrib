@@ -6,6 +6,7 @@ package loadbalancingexporter
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -90,7 +91,6 @@ func TestLoadBalancerStart(t *testing.T) {
 	// prepare
 	ts, tb := getTelemetryAssets(t)
 	cfg := simpleConfig()
-
 	p, err := newLoadBalancer(ts.Logger, cfg, nil, tb)
 	require.NotNil(t, p)
 	require.NoError(t, err)
@@ -114,8 +114,10 @@ func TestWithDNSResolver(t *testing.T) {
 			},
 		},
 	}
-
-	p, err := newLoadBalancer(ts.Logger, cfg, nil, tb)
+	factory := func(ctx context.Context, endpoint string) (component.Component, error) {
+		return nil, nil
+	}
+	p, err := newLoadBalancer(ts.Logger, cfg, factory, tb)
 	require.NotNil(t, p)
 	require.NoError(t, err)
 
@@ -178,7 +180,6 @@ func TestStartFailureStaticResolver(t *testing.T) {
 	// prepare
 	ts, tb := getTelemetryAssets(t)
 	cfg := simpleConfig()
-
 	p, err := newLoadBalancer(ts.Logger, cfg, nil, tb)
 	require.NotNil(t, p)
 	require.NoError(t, err)
@@ -258,7 +259,7 @@ func TestRemoveExtraExporters(t *testing.T) {
 	assert.NotContains(t, p.exporters, endpointWithPort("endpoint-2"))
 }
 
-func TestAddMissingExporters(t *testing.T) {
+func TestAddMissingOtlpExporters(t *testing.T) {
 	// prepare
 	ts, tb := getTelemetryAssets(t)
 	cfg := simpleConfig()
@@ -272,7 +273,8 @@ func TestAddMissingExporters(t *testing.T) {
 		return newNopMockTracesExporter(), nil
 	}, component.StabilityLevelDevelopment))
 	fn := func(ctx context.Context, endpoint string) (component.Component, error) {
-		oCfg := cfg.Protocol.OTLP
+		oCfg := cfg.Exporter.OTLP.Settings
+		fmt.Println(oCfg)
 		oCfg.Endpoint = endpoint
 		return exporterFactory.CreateTraces(ctx, exportertest.NewNopSettings(), &oCfg)
 	}
@@ -307,7 +309,7 @@ func TestFailedToAddMissingExporters(t *testing.T) {
 		return nil, expectedErr
 	}, component.StabilityLevelDevelopment))
 	fn := func(ctx context.Context, endpoint string) (component.Component, error) {
-		oCfg := cfg.Protocol.OTLP
+		oCfg := cfg.Exporter.OTLP.Settings
 		oCfg.Endpoint = endpoint
 		return exporterFactory.CreateTraces(ctx, exportertest.NewNopSettings(), &oCfg)
 	}

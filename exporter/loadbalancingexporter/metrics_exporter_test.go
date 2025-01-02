@@ -63,7 +63,7 @@ func TestNewMetricsExporter(t *testing.T) {
 	}{
 		{
 			"empty routing key",
-			&Config{},
+			&Config{Exporter: Exporter{OTLP: OtlpExporter{Enabled: true}}},
 			errNoResolver,
 		},
 		{
@@ -85,8 +85,14 @@ func TestNewMetricsExporter(t *testing.T) {
 			"traceID",
 			&Config{
 				RoutingKey: traceIDRoutingStr,
+				Exporter:   Exporter{OTLP: OtlpExporter{Enabled: true}},
 			},
 			errNoResolver,
+		},
+		{
+			"empty exporter",
+			&Config{},
+			errNoExporter,
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
@@ -339,6 +345,11 @@ func TestConsumeMetrics_SingleEndpoint(t *testing.T) {
 				Resolver: ResolverSettings{
 					Static: &StaticResolver{Hostnames: []string{"endpoint-1"}},
 				},
+				Exporter: Exporter{
+					OTLP: OtlpExporter{
+						Enabled: true,
+					},
+				},
 				RoutingKey: tc.routingKey,
 			}
 
@@ -444,6 +455,11 @@ func TestConsumeMetrics_TripleEndpoint(t *testing.T) {
 			config := &Config{
 				Resolver: ResolverSettings{
 					Static: &StaticResolver{Hostnames: []string{"endpoint-1", "endpoint-2", "endpoint-3"}},
+				},
+				Exporter: Exporter{
+					OTLP: OtlpExporter{
+						Enabled: true,
+					},
 				},
 				RoutingKey: tc.routingKey,
 			}
@@ -974,6 +990,11 @@ func endpoint2Config() *Config {
 		Resolver: ResolverSettings{
 			Static: &StaticResolver{Hostnames: []string{"endpoint-1", "endpoint-2"}},
 		},
+		Exporter: Exporter{
+			OTLP: OtlpExporter{
+				Enabled: true,
+			},
+		},
 		RoutingKey: "service",
 	}
 }
@@ -984,6 +1005,11 @@ func resourceBasedRoutingConfig() *Config {
 			Static: &StaticResolver{Hostnames: []string{"endpoint-1", "endpoint-2"}},
 		},
 		RoutingKey: resourceRoutingStr,
+		Exporter: Exporter{
+			OTLP: OtlpExporter{
+				Enabled: true,
+			},
+		},
 	}
 }
 
@@ -993,6 +1019,11 @@ func metricNameBasedRoutingConfig() *Config {
 			Static: &StaticResolver{Hostnames: []string{"endpoint-1", "endpoint-2"}},
 		},
 		RoutingKey: metricNameRoutingStr,
+		Exporter: Exporter{
+			OTLP: OtlpExporter{
+				Enabled: true,
+			},
+		},
 	}
 }
 

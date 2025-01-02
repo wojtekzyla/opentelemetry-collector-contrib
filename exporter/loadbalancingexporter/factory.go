@@ -8,6 +8,7 @@ package loadbalancingexporter // import "github.com/open-telemetry/opentelemetry
 import (
 	"context"
 	"fmt"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/splunkhecexporter"
 
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/exporter"
@@ -38,17 +39,30 @@ func createDefaultConfig() component.Config {
 	otlpDefaultCfg := otlpFactory.CreateDefaultConfig().(*otlpexporter.Config)
 	otlpDefaultCfg.Endpoint = "placeholder:4317"
 
+	splunkFactory := splunkhecexporter.NewFactory()
+	splunkDefaultCfg := splunkFactory.CreateDefaultConfig().(*splunkhecexporter.Config)
+	splunkDefaultCfg.Endpoint = "placeholder:8088"
+	splunkDefaultCfg.Token = "00000000-0000-0000-0000-000000000000"
+
 	return &Config{
 		// By default we disable resilience options on loadbalancing exporter level
 		// to maintain compatibility with workflow in previous versions
-		Protocol: Protocol{
-			OTLP: *otlpDefaultCfg,
+		Exporter: Exporter{
+			OTLP:   OtlpExporter{false, *otlpDefaultCfg},
+			Splunk: SplunkExporter{false, *splunkDefaultCfg},
 		},
 	}
 }
 
-func buildExporterConfig(cfg *Config, endpoint string) otlpexporter.Config {
-	oCfg := cfg.Protocol.OTLP
+func buildOtlpExporterConfig(cfg *Config, endpoint string) otlpexporter.Config {
+	oCfg := cfg.Exporter.OTLP.Settings
+	oCfg.Endpoint = endpoint
+
+	return oCfg
+}
+
+func buildSplunkExporterConfig(cfg *Config, endpoint string) splunkhecexporter.Config {
+	oCfg := cfg.Exporter.Splunk.Settings
 	oCfg.Endpoint = endpoint
 
 	return oCfg

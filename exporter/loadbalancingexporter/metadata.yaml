@@ -12,9 +12,11 @@ status:
 tests:
   config:
     routing_key: "service"
-    protocol:
+    exporter:
       otlp:
-        timeout: 1s
+        enabled: true
+        settings:
+          timeout: 1s
     resolver:
       static:
         hostnames:

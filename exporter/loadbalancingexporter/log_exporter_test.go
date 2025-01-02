@@ -39,8 +39,13 @@ func TestNewLogsExporter(t *testing.T) {
 		},
 		{
 			"empty",
-			&Config{},
+			&Config{Exporter: Exporter{OTLP: OtlpExporter{Enabled: true}}},
 			errNoResolver,
+		},
+		{
+			"no exporter",
+			&Config{},
+			errNoExporter,
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {

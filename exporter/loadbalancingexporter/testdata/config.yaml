@@ -1,8 +1,10 @@
 loadbalancing:
-  protocol:
+  exporter:
     # the OTLP exporter configuration "endpoint" values will be ignored
     otlp:
-      timeout: 1s
+      enabled: true
+      settings:
+        timeout: 1s
 
   # how to get the list of backends: static
   resolver:
@@ -11,16 +13,18 @@ loadbalancing:
       - endpoint-1 # assumes 4317 as the default port
       - endpoint-2:55678
 loadbalancing/2:
-  protocol:
+  exporter:
     otlp:
+      enabled: true
 
   # how to get the list of backends: DNS
   resolver:
     dns:
       hostname: service-1 # assumes 4317 as the default port for the resolved IP addresses
 loadbalancing/3:
-  protocol:
+  exporter:
     otlp:
+      enabled: true
 
   # how to get the list of backends: DNS
   resolver:
@@ -31,6 +35,7 @@ loadbalancing/3:
 loadbalancing/4:
   protocol:
     otlp:
+      enabled: true
 
   # how to get the list of backends: DNS
   resolver:
@@ -43,7 +48,9 @@ loadbalancing/5:
   # the OTLP exporter configuration "sending_queue" values will be ignored
   sending_queue:
     enabled: true
-  protocol:
+  exporter:
     otlp:
-      sending_queue:
-        enabled: false
+      enabled: true
+      settings:
+        sending_queue:
+          enabled: false

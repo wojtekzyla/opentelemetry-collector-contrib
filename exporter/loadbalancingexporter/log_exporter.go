@@ -5,6 +5,7 @@ package loadbalancingexporter // import "github.com/open-telemetry/opentelemetry
 
 import (
 	"context"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/splunkhecexporter"
 	"math/rand"
 	"sync"
 	"time"
@@ -40,12 +41,28 @@ func newLogsExporter(params exporter.Settings, cfg component.Config) (*logExport
 	if err != nil {
 		return nil, err
 	}
-	exporterFactory := otlpexporter.NewFactory()
-	cfFunc := func(ctx context.Context, endpoint string) (component.Component, error) {
-		oCfg := buildExporterConfig(cfg.(*Config), endpoint)
-		oParams := buildExporterSettings(params, endpoint)
+	var cfFunc func(ctx context.Context, endpoint string) (component.Component, error)
+	cfFunc = nil
+	if cfg.(*Config).Exporter.OTLP.Enabled {
+		exporterFactory := otlpexporter.NewFactory()
+		cfFunc = func(ctx context.Context, endpoint string) (component.Component, error) {
+			oCfg := buildOtlpExporterConfig(cfg.(*Config), endpoint)
+			oParams := buildExporterSettings(params, endpoint)
 
-		return exporterFactory.CreateLogs(ctx, oParams, &oCfg)
+			return exporterFactory.CreateLogs(ctx, oParams, &oCfg)
+		}
+	}
+	if cfg.(*Config).Exporter.Splunk.Enabled {
+		exporterFactory := splunkhecexporter.NewFactory()
+		cfFunc = func(ctx context.Context, endpoint string) (component.Component, error) {
+			oCfg := buildSplunkExporterConfig(cfg.(*Config), endpoint)
+			oParams := buildExporterSettings(params, endpoint)
+
+			return exporterFactory.CreateLogs(ctx, oParams, &oCfg)
+		}
+	}
+	if cfFunc == nil {
+		return nil, errNoExporter
 	}
 
 	lb, err := newLoadBalancer(params.Logger, cfg, cfFunc, telemetry)

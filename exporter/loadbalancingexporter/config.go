@@ -4,6 +4,8 @@
 package loadbalancingexporter // import "github.com/open-telemetry/opentelemetry-collector-contrib/exporter/loadbalancingexporter"
 
 import (
+	"fmt"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/splunkhecexporter"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/servicediscovery/types"
@@ -36,14 +38,25 @@ type Config struct {
 	configretry.BackOffConfig `mapstructure:"retry_on_failure"`
 	QueueSettings             exporterhelper.QueueConfig `mapstructure:"sending_queue"`
 
-	Protocol   Protocol         `mapstructure:"protocol"`
+	Exporter   Exporter         `mapstructure:"exporter"`
 	Resolver   ResolverSettings `mapstructure:"resolver"`
 	RoutingKey string           `mapstructure:"routing_key"`
 }
 
-// Protocol holds the individual protocol-specific settings. Only OTLP is supported at the moment.
-type Protocol struct {
-	OTLP otlpexporter.Config `mapstructure:"otlp"`
+type OtlpExporter struct {
+	Enabled  bool                `mapstructure:"enabled"`
+	Settings otlpexporter.Config `mapstructure:"settings"`
+}
+
+type SplunkExporter struct {
+	Enabled  bool                     `mapstructure:"enabled"`
+	Settings splunkhecexporter.Config `mapstructure:"settings"`
+}
+
+// Protocol holds the individual protocol-specific settings.
+type Exporter struct {
+	OTLP   OtlpExporter   `mapstructure:"otlp"`
+	Splunk SplunkExporter `mapstructure:"splunk"`
 }
 
 // ResolverSettings defines the configurations for the backend resolver
@@ -82,4 +95,20 @@ type AWSCloudMapResolver struct {
 	Interval      time.Duration            `mapstructure:"interval"`
 	Timeout       time.Duration            `mapstructure:"timeout"`
 	Port          *uint16                  `mapstructure:"port"`
+}
+
+func (c *Config) Validate() error {
+	count := 0
+	if c.Exporter.OTLP.Enabled {
+		count++
+	}
+
+	if c.Exporter.Splunk.Enabled {
+		count++
+	}
+
+	if count > 1 {
+		return fmt.Errorf("only one exporter should be specified")
+	}
+	return nil
 }

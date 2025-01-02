@@ -5,9 +5,11 @@ processors:
 
 exporters:
   loadbalancing:
-    protocol:
+    exporter:
       otlp:
-        endpoint: should-be-replaced:4317
+        enabled: true
+        settings:
+          endpoint: should-be-replaced:4317
 
     resolver:
       static:

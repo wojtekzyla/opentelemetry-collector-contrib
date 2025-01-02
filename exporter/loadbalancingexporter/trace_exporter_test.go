@@ -40,8 +40,19 @@ func TestNewTracesExporter(t *testing.T) {
 		},
 		{
 			"empty",
-			&Config{},
+			&Config{
+				Exporter: Exporter{
+					OTLP: OtlpExporter{
+						Enabled: true,
+					},
+				},
+			},
 			errNoResolver,
+		},
+		{
+			"no exporter",
+			&Config{},
+			errNoExporter,
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
@@ -701,6 +712,11 @@ func simpleConfig() *Config {
 		Resolver: ResolverSettings{
 			Static: &StaticResolver{Hostnames: []string{"endpoint-1"}},
 		},
+		Exporter: Exporter{
+			OTLP: OtlpExporter{
+				Enabled: true,
+			},
+		},
 	}
 }
 
@@ -710,6 +726,11 @@ func serviceBasedRoutingConfig() *Config {
 			Static: &StaticResolver{Hostnames: []string{"endpoint-1", "endpoint-2"}},
 		},
 		RoutingKey: "service",
+		Exporter: Exporter{
+			OTLP: OtlpExporter{
+				Enabled: true,
+			},
+		},
 	}
 }
 

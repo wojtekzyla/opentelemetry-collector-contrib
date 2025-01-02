@@ -27,15 +27,32 @@ func TestTracesExporterGetsCreatedWithValidConfiguration(t *testing.T) {
 	// prepare
 	factory := NewFactory()
 	creationParams := exportertest.NewNopSettings()
+	// Config with OTLP exporter
 	cfg := &Config{
 		Resolver: ResolverSettings{
 			Static: &StaticResolver{Hostnames: []string{"endpoint-1"}},
 		},
+		Exporter: Exporter{
+			OTLP: OtlpExporter{Enabled: true},
+		},
 	}
-
 	// test
 	exp, err := factory.CreateTraces(context.Background(), creationParams, cfg)
+	// verify
+	assert.NoError(t, err)
+	assert.NotNil(t, exp)
 
+	// Config with Splunk HEC exporter
+	cfg = &Config{
+		Resolver: ResolverSettings{
+			Static: &StaticResolver{Hostnames: []string{"endpoint-1"}},
+		},
+		Exporter: Exporter{
+			Splunk: SplunkExporter{Enabled: true},
+		},
+	}
+	// test
+	exp, err = factory.CreateTraces(context.Background(), creationParams, cfg)
 	// verify
 	assert.NoError(t, err)
 	assert.NotNil(t, exp)
@@ -45,15 +62,32 @@ func TestLogExporterGetsCreatedWithValidConfiguration(t *testing.T) {
 	// prepare
 	factory := NewFactory()
 	creationParams := exportertest.NewNopSettings()
+	// Config with OTLP exporter
 	cfg := &Config{
 		Resolver: ResolverSettings{
 			Static: &StaticResolver{Hostnames: []string{"endpoint-1"}},
 		},
+		Exporter: Exporter{
+			OTLP: OtlpExporter{Enabled: true},
+		},
 	}
-
 	// test
 	exp, err := factory.CreateLogs(context.Background(), creationParams, cfg)
+	// verify
+	assert.NoError(t, err)
+	assert.NotNil(t, exp)
 
+	// Config with Splunk exporter
+	cfg = &Config{
+		Resolver: ResolverSettings{
+			Static: &StaticResolver{Hostnames: []string{"endpoint-1"}},
+		},
+		Exporter: Exporter{
+			Splunk: SplunkExporter{Enabled: true},
+		},
+	}
+	// test
+	exp, err = factory.CreateLogs(context.Background(), creationParams, cfg)
 	// verify
 	assert.NoError(t, err)
 	assert.NotNil(t, exp)
@@ -65,10 +99,22 @@ func TestOTLPConfigIsValid(t *testing.T) {
 	defaultCfg := factory.CreateDefaultConfig().(*Config)
 
 	// test
-	otlpCfg := defaultCfg.Protocol.OTLP
+	otlpCfg := defaultCfg.Exporter.OTLP.Settings
 
 	// verify
 	assert.NoError(t, otlpCfg.Validate())
+}
+
+func TestSplunkConfigIsValid(t *testing.T) {
+	// prepare
+	factory := NewFactory()
+	defaultCfg := factory.CreateDefaultConfig().(*Config)
+
+	// test
+	splunkCfg := defaultCfg.Exporter.Splunk.Settings
+
+	// verify
+	assert.NoError(t, splunkCfg.Validate())
 }
 
 func TestBuildExporterConfig(t *testing.T) {
@@ -88,7 +134,7 @@ func TestBuildExporterConfig(t *testing.T) {
 
 	// test
 	defaultCfg := otlpexporter.NewFactory().CreateDefaultConfig().(*otlpexporter.Config)
-	exporterCfg := buildExporterConfig(c.(*Config), "the-endpoint")
+	exporterCfg := buildOtlpExporterConfig(c.(*Config), "the-endpoint")
 
 	// verify
 	grpcSettings := defaultCfg.ClientConfig
