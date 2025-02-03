@@ -36,6 +36,8 @@ const (
 	HostPortType EndpointType = "hostport"
 	// ContainerType is a container endpoint.
 	ContainerType EndpointType = "container"
+	// KafkaTopicType is a kafka topic endpoint
+	KafkaTopicType EndpointType = "kafka.topics"
 )
 
 var (
@@ -45,6 +47,7 @@ var (
 	_ EndpointDetails = (*K8sNode)(nil)
 	_ EndpointDetails = (*HostPort)(nil)
 	_ EndpointDetails = (*Container)(nil)
+	_ EndpointDetails = (*KafkaTopic)(nil)
 )
 
 // EndpointDetails provides additional context about an endpoint such as a Pod or Port.
@@ -386,4 +389,19 @@ func (n *K8sNode) Env() EndpointEnv {
 
 func (n *K8sNode) Type() EndpointType {
 	return K8sNodeType
+}
+
+type KafkaTopic struct {
+	// The list of kafka brokers
+	Brokers []string
+}
+
+func (k *KafkaTopic) Env() EndpointEnv {
+	return map[string]any{
+		"brokers": k.Brokers,
+	}
+}
+
+func (k *KafkaTopic) Type() EndpointType {
+	return KafkaTopicType
 }
