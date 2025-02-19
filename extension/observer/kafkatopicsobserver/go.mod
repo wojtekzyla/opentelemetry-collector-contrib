@@ -3,12 +3,14 @@ module github.com/open-telemetry/opentelemetry-collector-contrib/extension/obser
 go 1.23.0
 
 require (
+	github.com/IBM/sarama v1.45.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/extension/observer v0.120.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/internal/kafka v0.120.0
 	github.com/stretchr/testify v1.10.0
 	go.opentelemetry.io/collector/component v0.120.0
 	go.opentelemetry.io/collector/component/componenttest v0.120.0
 	go.opentelemetry.io/collector/confmap v1.26.0
+	go.opentelemetry.io/collector/confmap/xconfmap v0.120.0
 	go.opentelemetry.io/collector/extension v0.120.0
 	go.opentelemetry.io/collector/extension/extensiontest v0.120.0
 	go.uber.org/goleak v1.3.0
@@ -16,7 +18,6 @@ require (
 )
 
 require (
-	github.com/IBM/sarama v1.45.0 // indirect
 	github.com/aws/aws-msk-iam-sasl-signer-go v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.55.6 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.36.1 // indirect
@@ -61,6 +62,7 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
